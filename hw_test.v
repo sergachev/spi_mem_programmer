@@ -41,15 +41,12 @@ module hw_test(
  
     clk_for_spi clk_spi_inst
       (
-      // Clock in ports
-       .clk_in1(CLK_100M),      // input clk_in1
-       // Clock out ports
-       .clk_out1(clk),     // output clk_out1
-       .clk_out2(clk_to_mem),     // output clk_out2
-       // Status and control signals
-       .reset(RESET), // input reset
-       .power_down(1'b0), //TODO
-       .locked(locked) // output locked
+       .clk_in1(CLK_100M),      // input clk_in1, 100MHz
+       .clk_out1(clk),          // output clk_out1, 40MHz, 0deg
+       .clk_out2(clk_to_mem),   // output clk_out2, 40MHz, 180deg
+       .reset(RESET),           // input reset
+       .power_down(1'b0),       
+       .locked()          
     );      
 
     STARTUPE2 #(
@@ -57,15 +54,15 @@ module hw_test(
        .SIM_CCLK_FREQ(10.0)  // Set the Configuration Clock Frequency(ns) for simulation.
     )
     STARTUPE2_inst (
-        .CFGCLK(),       // 1-bit output: Configuration main clock output
-        .CFGMCLK(),     // 1-bit output: Configuration internal oscillator clock output
-        .EOS(EOS),             // 1-bit output: Active high output signal indicating the End Of Startup.
-        .PREQ(),           // 1-bit output: PROGRAM request to fabric output
+        .CFGCLK(),              // 1-bit output: Configuration main clock output
+        .CFGMCLK(),             // 1-bit output: Configuration internal oscillator clock output
+        .EOS(EOS),              // 1-bit output: Active high output signal indicating the End Of Startup.
+        .PREQ(),                // 1-bit output: PROGRAM request to fabric output
         .CLK(1'b0),             // 1-bit input: User start-up clock input
         .GSR(1'b0),             // 1-bit input: Global Set/Reset input (GSR cannot be used for the port name)
         .GTS(1'b0),             // 1-bit input: Global 3-state input (GTS cannot be used for the port name)
-        .KEYCLEARB(1'b0), // 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
-        .PACK(1'b0),           // 1-bit input: PROGRAM acknowledge input
+        .KEYCLEARB(1'b0),       // 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
+        .PACK(1'b0),             // 1-bit input: PROGRAM acknowledge input
         .USRCCLKO(clk_to_mem),   // 1-bit input: User CCLK input
         .USRCCLKTS(1'b0), // 1-bit input: User CCLK 3-state enable input
         .USRDONEO(1'b1),   // 1-bit input: User DONE pin output control
@@ -172,26 +169,5 @@ module hw_test(
     end
 
 
-//    wire eoc_out;
-//    wire den_in = eoc_out;
-//    wire [15:0] xadc_readout;
-      
-//    xadc_wiz_0 xadc_inst (
-//      .di_in(16'b0),              // input wire [15 : 0] di_in
-//      .daddr_in(7'b0),        // input wire [6 : 0] daddr_in
-//      .den_in(den_in),            // input wire den_in
-//      .dwe_in(1'b0),            // input wire dwe_in
-//      .drdy_out(),        // output wire drdy_out
-//      .do_out(xadc_readout),            // output wire [15 : 0] do_out
-//      .dclk_in(~clk),          // input wire dclk_in
-//      .reset_in(RESET),        // input wire reset_in
-//      .vp_in(1'b0),              // input wire vp_in
-//      .vn_in(1'b0),              // input wire vn_in
-//      .channel_out(),  // output wire [4 : 0] channel_out
-//      .eoc_out(eoc_out),          // output wire eoc_out
-//      .alarm_out(),      // output wire alarm_out
-//      .eos_out(),          // output wire eos_out
-//      .busy_out()        // output wire busy_out
-//    );
 
 endmodule

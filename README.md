@@ -5,3 +5,6 @@ Works in simulation (with verilog SPI memory model), and tested on hardware with
 The verilog interface is really simple: i.e. give address + data to be written on the input, trigger, wait for completion.
 hw_test.v provides an example command sequence using the module.  
 At the moment it supports these features: read ID, enable quad protocol, write enable, sector erase, bulk erase, page program, poll status register.
+
+N25Q128 verilog model can be obtained from Micron website:
+https://www.micron.com/~/media/documents/products/sim-model/nor-flash/serial/bfm/n25q/n25q128a13e_3v_micronxip_vg12,-d-,tar.gz

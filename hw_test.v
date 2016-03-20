@@ -11,14 +11,14 @@ module hw_test(
         output [1:0] LED,
 
         inout [3:0] DQio,
-        output S,
-        input RESET,
-        output C
+        output S//,
+//        input RESET,
+//        output C
     );
    
     wire clk_to_mem, clk;
-  //  wire RESET = ~EOS;
-    assign C = clk_to_mem;
+    wire RESET = ~EOS;
+ //   assign C = clk_to_mem;
     
     wire [7:0] readout;
     wire busy;

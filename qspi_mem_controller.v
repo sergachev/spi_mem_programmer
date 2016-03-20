@@ -19,8 +19,7 @@ module qspi_mem_controller(
         input trigger,
         input quad,
         input [7:0] cmd,
-        input [24-1:0] addr,
-        input [256*8-1:0] data_send,
+        input [(3+256)*8-1:0] data_send, //max: 256B page data + 3B address
         output reg [7:0] readout,
         output reg busy,
         output reg error,
@@ -77,6 +76,11 @@ module qspi_mem_controller(
                                 state <= `STATE_PP;
                             `CMD_WRVECR:
                                 state <= `STATE_WRVECR;
+                            default: begin
+                                $display("ERROR: unknown command!");
+                                $display(cmd);
+                                $stop;
+                            end
                         endcase
                     end else
                         busy <= 0;
@@ -147,7 +151,7 @@ module qspi_mem_controller(
                 end
                 
                 `STATE_PP: begin
-                    data_in <= {`CMD_PP, addr, data_send};
+                    data_in <= {`CMD_PP, data_send};
                     data_in_count <= 260; //256 for data +1cmd+3addr
                     data_out_count <= 0;
                     spi_trigger <= 1;
@@ -157,7 +161,7 @@ module qspi_mem_controller(
                end
 
                 `STATE_SE: begin
-                    data_in <= {`CMD_SE, addr};
+                    data_in <= {`CMD_SE, data_send[23:0]};
                     data_in_count <= 4; //1cmd+3addr
                     data_out_count <= 0;
                     spi_trigger <= 1;

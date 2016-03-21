@@ -2,7 +2,7 @@
 
 `include "defs.vh"
 
-module testbench();
+module testbench_dword_interface();
 
     reg clock=0, reset=1;
 

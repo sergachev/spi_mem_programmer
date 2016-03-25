@@ -11,6 +11,8 @@
 `define STATE_PP 6
 `define STATE_SE 7
 `define STATE_WRVECR 8
+`define STATE_RDVECR 9
+`define STATE_RDSR 10
 
 
 module qspi_mem_controller(
@@ -76,6 +78,10 @@ module qspi_mem_controller(
                                 state <= `STATE_PP;
                             `CMD_WRVECR:
                                 state <= `STATE_WRVECR;
+                            `CMD_RDVECR:
+                                state <= `STATE_RDVECR;
+                            `CMD_RDSR:
+                                    state <= `STATE_RDSR;
                             default: begin
                                 $display("ERROR: unknown command!");
                                 $display(cmd);
@@ -95,10 +101,28 @@ module qspi_mem_controller(
                     nextstate <= `STATE_IDLE;
                 end                
 
+                `STATE_RDSR: begin
+                    data_in <= `CMD_RDSR;
+                    data_in_count <= 1;
+                    data_out_count <= 1;
+                    spi_trigger <= 1;
+                    state <= `STATE_WAIT;
+                    nextstate <= `STATE_IDLE;
+                end                
+
                 `STATE_WRVECR: begin
                     data_in <= {`CMD_WRVECR, data_send[7:0]};
                     data_in_count <= 2;
                     data_out_count <= 0;
+                    spi_trigger <= 1;
+                    state <= `STATE_WAIT;
+                    nextstate <= `STATE_IDLE;
+                end
+
+                `STATE_RDVECR: begin
+                    data_in <= `CMD_RDVECR;
+                    data_in_count <= 1;
+                    data_out_count <= 1;
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
                     nextstate <= `STATE_IDLE;

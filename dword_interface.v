@@ -8,20 +8,22 @@
 
 module dword_interface(
         input clk62,
+        input RESET,
         input wr,
         input [31:0] data_from_PC,
-        output busy, error,
+        output reg busy, 
+        output error,
         output [7:0] readout,
 
         inout [3:0] DQio,
+        //output C,
         output S,
-        input RESET,
-        output C
+        output reg [3:0] state
     );
    
     wire clk_to_mem, clk;
   //  wire RESET = ~EOS;
-    assign C = clk_to_mem;
+  //  assign C = clk_to_mem;
         
     wire EOS;
  
@@ -31,9 +33,9 @@ module dword_interface(
        .clk_in1(clk62),      // input clk_in1, 62.5
        .clk_out1(clk),          // output clk_out1, 1/2
        .clk_out2(clk_to_mem),   // output clk_out2, 1/2 + pi
-       .reset(RESET),           // input reset
-       .power_down(1'b0),       
-       .locked()          
+       .reset(RESET)           // input reset
+//       .power_down(1'b0),       
+//       .locked()          
     );      
 
     STARTUPE2 #(
@@ -56,12 +58,13 @@ module dword_interface(
         .USRDONETS(1'b1)  // 1-bit input: User DONE 3-state enable output
     );
  
-    reg [4:0] state;
+//    reg [3:0] state;
     reg trigger;
     reg quad;
     reg [7:0] cmd;
     reg [259*8-1:0] data_send;
     reg [7:0] len;
+    wire mc_busy;
 
 
         qspi_mem_controller mc(
@@ -74,7 +77,7 @@ module dword_interface(
         .cmd(cmd),
         .data_send(data_send),
         .readout(readout),
-        .busy(busy),
+        .busy(mc_busy),
         .error(error));
 
 
@@ -84,16 +87,22 @@ module dword_interface(
             trigger <= 0;
             state <= 0;
             quad <= 0;
+            busy <= 1;
         end else begin
         
             case(state)
                 0: begin
                     trigger <= 0;
-                    if(!busy && wr) begin
-                        cmd <= data_from_PC[7:0];
-                        len <= data_from_PC[15:8];
-                        quad <= data_from_PC[16];
-                        state <= state+1;
+                    if(busy && !mc_busy) begin
+                        busy <= 0;
+                    end else begin
+                        if(!busy && wr) begin
+                            busy <= 1;
+                            cmd <= data_from_PC[7:0];
+                            len <= data_from_PC[15:8];
+                            quad <= data_from_PC[16];
+                            state <= state+1;
+                        end
                     end
                 end
             

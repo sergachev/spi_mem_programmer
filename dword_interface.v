@@ -2,13 +2,13 @@
 
 `include "defs.vh"
 
-// - in simulation, RESET comes from testbench and C has to be connected mem model via testbench
+// - in simulation, reset comes from testbench and C has to be connected mem model via testbench
 // - in hardware, when FPGA boot memory is used, memory clock has to be connected via STARTUPE2
-//   (and also EOS - end of startup signal can be used as RESET)
+//   (and also EOS - end of startup signal can be used as reset)
 
 module dword_interface(
-        input clk62,
-        input RESET,
+        input clk_in,
+        input reset,
         input wr,
         input [31:0] data_from_PC,
         output reg busy, 
@@ -17,12 +17,11 @@ module dword_interface(
 
         inout [3:0] DQio,
         //output C,
-        output S,
-        output reg [3:0] state
+        output S
     );
    
-    wire clk_to_mem, clk;
-  //  wire RESET = ~EOS;
+    wire clk_to_mem, clk_spi;
+  //  wire reset = ~EOS;
   //  assign C = clk_to_mem;
         
     wire EOS;
@@ -30,12 +29,10 @@ module dword_interface(
  
     clk_for_spi clk_spi_inst
       (
-       .clk_in1(clk62),      // input clk_in1, 62.5
-       .clk_out1(clk),          // output clk_out1, 1/2
-       .clk_out2(clk_to_mem),   // output clk_out2, 1/2 + pi
-       .reset(RESET)           // input reset
-//       .power_down(1'b0),       
-//       .locked()          
+       .clk_in1(clk_in),       // input clk_in1,   62.5MHz
+       .clk_out1(clk_spi),     // output clk_out1, half input freq
+       .clk_out2(clk_to_mem),  // output clk_out2, clk_out1 inverted
+       .reset(reset)           // input reset       
     );      
 
     STARTUPE2 #(
@@ -58,7 +55,7 @@ module dword_interface(
         .USRDONETS(1'b1)  // 1-bit input: User DONE 3-state enable output
     );
  
-//    reg [3:0] state;
+    reg [3:0] state;
     reg trigger;
     reg quad;
     reg [7:0] cmd;
@@ -67,23 +64,22 @@ module dword_interface(
     wire mc_busy;
 
 
-        qspi_mem_controller mc(
-        .CLK_100M(clk), 
-        .RESET(RESET),
-        .S(S), 
-        .DQio(DQio),
-        .trigger(trigger),
-        .quad(quad),
-        .cmd(cmd),
-        .data_send(data_send),
-        .readout(readout),
-        .busy(mc_busy),
-        .error(error));
+    qspi_mem_controller mc(
+    .clk(clk_spi), 
+    .reset(reset),
+    .S(S), 
+    .DQio(DQio),
+    .trigger(trigger),
+    .quad(quad),
+    .cmd(cmd),
+    .data_send(data_send),
+    .readout(readout),
+    .busy(mc_busy),
+    .error(error));
 
 
-
-    always @(posedge clk62) begin
-        if(RESET) begin
+    always @(posedge clk_in) begin
+        if(reset) begin
             trigger <= 0;
             state <= 0;
             quad <= 0;

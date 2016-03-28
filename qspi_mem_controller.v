@@ -13,11 +13,12 @@
 `define STATE_WRVECR 8
 `define STATE_RDVECR 9
 `define STATE_RDSR 10
+`define STATE_MIORDID 11
 
 
 module qspi_mem_controller(
-        input CLK_100M,
-        input RESET,
+        input clk,
+        input reset,
         input trigger,
         input quad,
         input [7:0] cmd,
@@ -40,7 +41,7 @@ module qspi_mem_controller(
     
     reg [35:0] delay_counter;
     
-    spi_cmd sc(.clk(CLK_100M), .reset(RESET), .trigger(spi_trigger), .busy(spi_busy), .quad(quad),
+    spi_cmd sc(.clk(clk), .reset(reset), .trigger(spi_trigger), .busy(spi_busy), .quad(quad),
         .data_in_count(data_in_count), .data_out_count(data_out_count), .data_in(data_in), .data_out(data_out),
         .DQio(DQio[3:0]), .S(S));
     
@@ -49,8 +50,8 @@ module qspi_mem_controller(
     reg [5:0] nextstate;
     
     
-    always @(posedge CLK_100M) begin
-        if(RESET) begin
+    always @(posedge clk) begin
+        if(reset) begin
             state <= `STATE_WAIT;
             nextstate <= `STATE_IDLE;
             spi_trigger <= 0;
@@ -68,6 +69,8 @@ module qspi_mem_controller(
                         case(cmd)
                             `CMD_RDID:
                                 state <= `STATE_RDID;
+                            `CMD_MIORDID:
+                                state <= `STATE_MIORDID;
                             `CMD_WREN:
                                 state <= `STATE_WREN;
                             `CMD_BE:
@@ -81,7 +84,7 @@ module qspi_mem_controller(
                             `CMD_RDVECR:
                                 state <= `STATE_RDVECR;
                             `CMD_RDSR:
-                                    state <= `STATE_RDSR;
+                                state <= `STATE_RDSR;
                             default: begin
                                 $display("ERROR: unknown command!");
                                 $display(cmd);
@@ -99,6 +102,23 @@ module qspi_mem_controller(
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
                     nextstate <= `STATE_IDLE;
+                    if(quad==1) begin
+                        $display("ERROR: RDID is not available in quad mode!");
+                        $stop;
+                    end
+                end                
+
+                `STATE_MIORDID: begin
+                    data_in <= `CMD_MIORDID;
+                    data_in_count <= 1;
+                    data_out_count <= 1;
+                    spi_trigger <= 1;
+                    state <= `STATE_WAIT;
+                    nextstate <= `STATE_IDLE;
+                    if(quad==0) begin
+                        $display("ERROR: MIORDID is only available in quad mode!");
+                        $stop;
+                    end
                 end                
 
                 `STATE_RDSR: begin
@@ -176,7 +196,7 @@ module qspi_mem_controller(
                 
                 `STATE_PP: begin
                     data_in <= {`CMD_PP, data_send};
-                    data_in_count <= 260; //256 for data +1cmd+3addr
+                    data_in_count <= 260; //256 for data +1cmd +3addr
                     data_out_count <= 0;
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
@@ -186,7 +206,7 @@ module qspi_mem_controller(
 
                 `STATE_SE: begin
                     data_in <= {`CMD_SE, data_send[23:0]};
-                    data_in_count <= 4; //1cmd+3addr
+                    data_in_count <= 4; //1cmd + 3addr
                     data_out_count <= 0;
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;

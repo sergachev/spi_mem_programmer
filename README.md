@@ -22,3 +22,6 @@ The structure is:
 
 dword_interface.v is an alternative wrapper around qspi_mem_controller.v (instead of hw_test.v) which adds a DWORD-wide interface to connect to PCIe PIO.  
 testbench_dword.v can be used to test it.  
+
+
+License: MIT.

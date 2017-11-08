@@ -11,14 +11,14 @@ module hw_test(
         output [1:0] LED,
 
         inout [3:0] DQio,
-        output S//,
-//        input RESET,
-//        output C
+        output S,
+        input RESET,
+        output C_
     );
    
     wire clk_to_mem, clk;
-    wire RESET = ~EOS;
- //   assign C = clk_to_mem;
+//    wire RESET = ~EOS;
+    assign C_ = clk_to_mem;
     
     wire [7:0] readout;
     wire busy;
@@ -26,8 +26,8 @@ module hw_test(
     reg trigger;
     reg quad;
     reg [7:0] cmd;
-    reg [23:0] addr;
-    reg [256*8-1:0] data_send;
+//    reg [23:0] addr;
+    reg [(3+256)*8-1:0] data_send;
     reg [4:0] state;
     reg [31:0] cntr_blink;
     reg [1:0] LEDr;
@@ -44,9 +44,9 @@ module hw_test(
        .clk_in1(CLK_100M),      // input clk_in1, 100MHz
        .clk_out1(clk),          // output clk_out1, 40MHz, 0deg
        .clk_out2(clk_to_mem),   // output clk_out2, 40MHz, 180deg
-       .reset(RESET),           // input reset
-       .power_down(1'b0),       
-       .locked()          
+       .reset(RESET)//,           // input reset
+//       .power_down(1'b0),       
+//       .locked()          
     );      
 
     STARTUPE2 #(
@@ -70,14 +70,14 @@ module hw_test(
     );
  
         qspi_mem_controller mc(
-        .CLK_100M(clk), 
-        .RESET(RESET),
+        .clk(clk), 
+        .reset(RESET),
         .S(S), 
         .DQio(DQio),
         .trigger(trigger),
         .quad(quad),
         .cmd(cmd),
-        .addr(addr),
+//        .addr(addr),
         .data_send(data_send),
         .readout(readout),
         .busy(busy),
@@ -147,8 +147,7 @@ module hw_test(
                         trigger <= 0;
                     else if(!busy) begin
                         cmd <= `CMD_PP;
-                        addr <= 24'hA30000;
-                        data_send <= 'hDEADBEEF0000DEADBEEF;
+                        data_send <= {24'hA30000, 80'hDEADBEEF0000DEADBEEF, 1968'h0}; // 3 bytes of address, then data
                         trigger <= 1;   
                         state <= state+1;                    
                     end

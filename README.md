@@ -1,11 +1,11 @@
 This is a small (Q)SPI flash memory programmer in Verilog.
 It was designed as a module to be integrated into larger projects.  
 For example, I use it for in-system reprogramming of the boot memory of Artix7 board via PCI express. 
-It works in simulation (with verilog SPI memory models), and was tested in hardware with N25Q128 at 40 MHz clock speed.  
+It works in simulation (with verilog SPI memory models) and was tested in hardware with N25Q128 at 40 MHz clock speed.  
 
 The Verilog interface is really simple: give address + data to be written on the input, trigger, wait for completion.
 hw_test.v provides an example command sequence using the module and can be used as a top module for a small test on hardware.
-As an additional feature, hw_test.v wraps around STARTUPE2 primitive - so it connects to the boot memory.
+As an additional feature hw_test.v wraps around STARTUPE2 primitive - so it connects to the boot memory.
 
 At the moment the module can: read ID, enable quad protocol, write enable, sector erase, bulk erase, page program, poll status register.
 
@@ -23,9 +23,9 @@ The structure of the project is:
 
 4: testbench.v: used as a simulation wrapper for hw_test.v  
 
-5: dword_interface.v is an alternative wrapper around qspi_mem_controller.v instead of hw_test.v -- which adds a DWORD-wide interface (I use it to connect to PCIe PIO)
+5: dword_interface.v is an alternative wrapper around qspi_mem_controller.v instead of hw_test.v, which adds a DWORD-wide interface (I use it to connect to PCIe PIO)
 
-6: testbench_dword.v can be used to dword_interface.v instead of testbench.v
+6: testbench_dword.v can be used in simulation with dword_interface.v instead of testbench.v+hw_test.v
 
 
 License: MIT.

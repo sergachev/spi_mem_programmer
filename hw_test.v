@@ -36,10 +36,8 @@ module hw_test(
 //    reg [23:0] addr;
     reg [(3+256)*8-1:0] data_send;
     reg [4:0] state;
-    reg [31:0] cntr_blink;
     reg [1:0] LEDr;
     reg blink;
-    reg startup_ready;
     
     assign LED[0] = blink & LEDr[0];  // indicates end of sequence
     assign LED[1] = ~blink & LEDr[1]; // indicates success
@@ -95,25 +93,17 @@ module hw_test(
             state <= 0;
             LEDr <= 0;
             blink <= 0;
-            cntr_blink <= 'd990_000; //make some delay at startup
-            startup_ready <= 0;
             quad <= 0;
         end else begin
-            if(cntr_blink<'d1_000_000)
-                cntr_blink <= cntr_blink+1;
-            else begin
-                cntr_blink <= 0;
-                blink <= ~blink;
-                startup_ready <= 1;
-            end
+            blink <= ~blink;
         
             case(state)
                 0: begin
-                    if(!busy && startup_ready)
+                    if(!busy)
                         state <= state+1;
                 end
                 
-                1: begin    //read memory ID to check communication
+                1: begin    // read memory ID to check communication
                     cmd<=`CMD_RDID;
                     trigger<=1;   
                     state <= state+1;                    
@@ -123,15 +113,15 @@ module hw_test(
                     if(trigger)
                         trigger <= 0;
                     else if(!busy) begin
-                        if(readout==`JEDEC_ID) begin    //verify the memory ID read
+                        if(readout==`JEDEC_ID) begin    // verify the memory ID read
                             LEDr[1] <= 1;
                             //enable quad IO
                             cmd <= `CMD_WRVECR;
-                            data_send[7:0] <= 8'b010_01_111;  //quad protocol, hold/accelerator disabled, default drive strength
+                            data_send[7:0] <= 8'b010_01_111;  // quad protocol, hold/accelerator disabled, default drive strength
                             trigger <= 1;   
                             state <= state+1;    
                         end else
-                            LEDr[0] <= 1; //mem ID wrong, error, finish
+                            LEDr[0] <= 1; // memory ID is wrong, error, finish
                     end
                 end
                 
@@ -151,7 +141,8 @@ module hw_test(
                         trigger <= 0;
                     else if(!busy) begin
                         cmd <= `CMD_PP;
-                        data_send <= {24'hA30000, 80'hDEADBEEF0000DEADBEEF, 1968'h0}; // 3 bytes of address, then data
+                         // 3 bytes of address, then data
+                        data_send <= {24'hA30000, 2048'h01020304057372f04a39e4d37746533f26c5e18660ac4f512a18faef74279aae5f886745368ff4bdc0505deeb822c1c2a0ac568c4c11b41a9f62f93492cdbdb2a2b57f16c173a319879b8e45baee122f7c5821445ae1ad29f7e2655ac509ca8b450d453638de42e853adb1fbbcc9bac5f7f35b16346431aa0ac6f4865abaa74859cdf4d94c46b40efabe211621515d5dc2d383debab44cdbd57c41b37c34d6466f15cf7e36b481e104bf0367d7f7393fe2e62f489e8c9f6c522ec842789e8b6d251d35cb938664fda91a44de72227f9d748dacc21bc0e5ad5df3458e8f3b023e4e53cb4b266d0fb495aaeae3a56f04f9a1117409992975c4b4a5a88048edee5d};
                         trigger <= 1;   
                         state <= state+1;                    
                     end

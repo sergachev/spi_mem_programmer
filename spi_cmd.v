@@ -26,7 +26,7 @@ module spi_cmd(
     
     reg [11:0] bit_cntr;
 
-    reg [3:0] DQ = 'b1111;
+    reg [3:0] DQ = 4'b1111;
     reg oe;
     assign DQio[0] = oe?DQ[0]:1'bZ;
     assign DQio[1] = oe?DQ[1]:1'bZ;
@@ -34,7 +34,7 @@ module spi_cmd(
     assign DQio[3] = quad?(oe?DQ[3]:1'bZ):1'b1; // has to be held 1 as 'hold'
     //during single IO operation, but in quad mode behaves as other IOs
     
-    reg [4:0] state;    
+    reg [1:0] state;    
     
      always @(posedge clk) begin
         if(reset) begin

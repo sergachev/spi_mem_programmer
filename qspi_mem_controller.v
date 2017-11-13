@@ -102,7 +102,7 @@ module qspi_mem_controller(
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
                     nextstate <= `STATE_IDLE;
-                    if(quad==1) begin
+                    if (quad == 1) begin
                         $display("ERROR: RDID is not available in quad mode!");
                         $stop;
                     end
@@ -115,7 +115,7 @@ module qspi_mem_controller(
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
                     nextstate <= `STATE_IDLE;
-                    if(quad==0) begin
+                    if (quad == 0) begin
                         $display("ERROR: MIORDID is only available in quad mode!");
                         $stop;
                     end
@@ -168,13 +168,13 @@ module qspi_mem_controller(
                 end
 
                 `STATE_POLL_RFSR: begin
-                    if(delay_counter == 0) begin // max delay timeout
+                    if (delay_counter == 0) begin // max delay timeout
                         state <= `STATE_IDLE;
                         error <= 1;
                     end else begin
-                        if(readout[7]==1)  begin// operation finished successfully
+                        if (readout[7] == 1) begin // operation finished successfully
                             state <= `STATE_IDLE;
-                        end else begin //go on polling
+                        end else begin // go on polling
                             data_in <= `CMD_RFSR;
                             data_in_count <= 1;
                             data_out_count <= 1;
@@ -188,7 +188,7 @@ module qspi_mem_controller(
 
                 `STATE_WAIT: begin
                     spi_trigger <= 0;
-                    if(!spi_trigger && !spi_busy) begin
+                    if (!spi_trigger && !spi_busy) begin
                         state <= nextstate;
                         readout <= data_out;
                     end
@@ -196,7 +196,7 @@ module qspi_mem_controller(
                 
                 `STATE_PP: begin
                     data_in <= {`CMD_PP, data_send};
-                    data_in_count <= 260; //256 for data +1cmd +3addr
+                    data_in_count <= 260; // 256 bytes for data + 1 for command + 3 for address
                     data_out_count <= 0;
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
@@ -206,7 +206,7 @@ module qspi_mem_controller(
 
                 `STATE_SE: begin
                     data_in <= {`CMD_SE, data_send[23:0]};
-                    data_in_count <= 4; //1cmd + 3addr
+                    data_in_count <= 4; // 1 byte command + 3 bytes address
                     data_out_count <= 0;
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;

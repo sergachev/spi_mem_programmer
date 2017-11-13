@@ -2,10 +2,6 @@
 
 `include "defs.vh"
 
-// - in simulation, reset comes from testbench and C has to be connected mem model via testbench
-// - in hardware, when FPGA boot memory is used, memory clock has to be connected via STARTUPE2
-//   (and also EOS - end of startup signal can be used as reset)
-
 module dword_interface(
         input clk_in,
         input reset,
@@ -15,17 +11,18 @@ module dword_interface(
         output error,
         output [7:0] readout,
 
+`ifndef  __SYNTHESIS__
+        output clk_to_mem_out,
+`endif
         inout [3:0] DQio,
-        //output C,
         output S
     );
    
     wire clk_to_mem, clk_spi;
-  //  wire reset = ~EOS;
-  //  assign C = clk_to_mem;
-        
-    wire EOS;
- 
+
+`ifndef  __SYNTHESIS__
+    assign clk_to_mem_out = clk_to_mem;
+`endif
  
     clk_for_spi clk_spi_inst
       (
@@ -42,7 +39,7 @@ module dword_interface(
     STARTUPE2_inst (
         .CFGCLK(),              // 1-bit output: Configuration main clock output
         .CFGMCLK(),             // 1-bit output: Configuration internal oscillator clock output
-        .EOS(EOS),              // 1-bit output: Active high output signal indicating the End Of Startup.
+        .EOS(),              // 1-bit output: Active high output signal indicating the End Of Startup.
         .PREQ(),                // 1-bit output: PROGRAM request to fabric output
         .CLK(1'b0),             // 1-bit input: User start-up clock input
         .GSR(1'b0),             // 1-bit input: Global Set/Reset input (GSR cannot be used for the port name)
@@ -103,9 +100,9 @@ module dword_interface(
                 end
             
                 1: begin
-                    if(len>0) begin
-                        if(wr) begin
-                            data_send <= {data_send[259*8-1-32:0], data_from_PC};
+                    if (len > 0) begin
+                        if (wr) begin
+                            data_send <= {data_send[259*8-1-32:0], data_from_PC}; // shifting in the data
                             len <= len-1;
                         end
                     end else begin
@@ -115,7 +112,8 @@ module dword_interface(
                 end
                 
                 2: begin
-                    state <= 0; //holding trigger 1 more cycle as target clock is twice slower
+                    if (mc_busy)
+                        state <= 0; // as our clock here is faster, holding the trigger high until the controller captures it
                 end
                 
                 default:

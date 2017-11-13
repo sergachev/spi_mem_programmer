@@ -2,24 +2,31 @@
 
 `include "defs.vh"
 
-// - in simulation, RESET comes from testbench and C has to be connected mem model via testbench
+// - in a simulation, RESET comes from a testbench and CLK_TO_MEM_OUT has to be connected to the mem model via the testbench
 // - in hardware, when FPGA boot memory is used, memory clock has to be connected via STARTUPE2
-//   (and also EOS - end of startup signal can be used as RESET)
+//   and EOS - end of startup signal - can be used as RESET
 
 module hw_test(
         input CLK_100M,
         output [1:0] LED,
 
-        inout [3:0] DQio,
-        output S,
+`ifndef  __SYNTHESIS__
+        output CLK_TO_MEM_OUT,
         input RESET,
-        output C_
+`endif
+        inout [3:0] DQio,
+        output S
     );
    
     wire clk_to_mem, clk;
-//    wire RESET = ~EOS;
-    assign C_ = clk_to_mem;
-    
+    wire EOS;
+
+`ifndef  __SYNTHESIS__
+    assign CLK_TO_MEM_OUT = clk_to_mem;
+`else 
+    wire RESET = ~EOS;
+`endif
+
     wire [7:0] readout;
     wire busy;
     wire error;
@@ -34,19 +41,16 @@ module hw_test(
     reg blink;
     reg startup_ready;
     
-    assign LED[0] = blink & LEDr[0]; //indicates end of sequence
-    assign LED[1] = ~blink & LEDr[1]; //indicates success
-    wire EOS;
+    assign LED[0] = blink & LEDr[0];  // indicates end of sequence
+    assign LED[1] = ~blink & LEDr[1]; // indicates success
  
  
     clk_for_spi clk_spi_inst
       (
-       .clk_in1(CLK_100M),      // input clk_in1, 100MHz
-       .clk_out1(clk),          // output clk_out1, 40MHz, 0deg
-       .clk_out2(clk_to_mem),   // output clk_out2, 40MHz, 180deg
-       .reset(RESET)//,           // input reset
-//       .power_down(1'b0),       
-//       .locked()          
+       .clk_in1(CLK_100M),      // input clk_in1, 100 MHz
+       .clk_out1(clk),          // output clk_out1, 40 MHz, 0 deg
+       .clk_out2(clk_to_mem),   // output clk_out2, 40 MHz, 180 deg
+       .reset(RESET)
     );      
 
     STARTUPE2 #(

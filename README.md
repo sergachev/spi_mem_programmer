@@ -15,6 +15,8 @@ https://www.micron.com/~/media/documents/products/sim-model/nor-flash/serial/bfm
 GD25Q16B model:
 http://gigadevice.com/product/detail/5/73.html
 
+S25FL128L model:
+https://freemodelfoundry.com/fmf_vlog_models/flash/s25fl128l.v
 
 The structure of the project is:
 

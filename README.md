@@ -9,8 +9,11 @@ As an additional feature hw_test.v wraps around STARTUPE2 primitive - so it conn
 
 At the moment the module can: read ID, enable quad protocol, write enable, sector erase, bulk erase, page program, poll status register.
 
-An N25Q128 Verilog model can be obtained from the Micron website:
+N25Q128 Verilog model can be obtained here:
 https://www.micron.com/~/media/documents/products/sim-model/nor-flash/serial/bfm/n25q/n25q128a13e_3v_micronxip_vg12,-d-,tar.gz
+
+GD25Q16B model:
+http://gigadevice.com/product/detail/5/73.html
 
 
 The structure of the project is:

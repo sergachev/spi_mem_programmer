@@ -20,18 +20,13 @@ set_property PACKAGE_PIN R21 [get_ports {DQio[3]}]
 
 
 set_property PACKAGE_PIN H4 [get_ports CLK_100M]
+create_clock -name clk_100m -period 10 [get_ports CLK_100M]
 
 set_property PACKAGE_PIN B1 [get_ports {LED[1]}]
 set_property PACKAGE_PIN D1 [get_ports {LED[0]}]
 
 
 create_generated_clock -name cclk -source [get_pins STARTUPE2_inst/USRCCLKO] -combinational [get_pins STARTUPE2_inst/USRCCLKO]
-
-
-
-set_false_path -to [get_ports {LED[*]}]
-
-
 set_input_delay -clock [get_clocks cclk] -clock_fall -min -add_delay 1.000 [get_ports {DQio[*]}]
 set_input_delay -clock [get_clocks cclk] -clock_fall -max -add_delay 6.000 [get_ports {DQio[*]}]
 set_output_delay -clock [get_clocks cclk] -min -add_delay -3.000 [get_ports {DQio[*]}]
@@ -39,3 +34,6 @@ set_output_delay -clock [get_clocks cclk] -max -add_delay 2.000 [get_ports {DQio
 set_output_delay -clock [get_clocks cclk] -min -add_delay -4.000 [get_ports S]
 set_output_delay -clock [get_clocks cclk] -max -add_delay 4.000 [get_ports S]
 
+
+set_false_path -to [get_ports {LED[*]}]
+set_false_path -from [get_ports RESET]

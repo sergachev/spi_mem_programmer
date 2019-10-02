@@ -12,7 +12,7 @@
 
 `define JEDEC_ID 8'h20
 
-`define tPPmax 'd5 //ms
-`define tBEmax 'd250_000 //ms
-`define tSEmax 'd3_000 //ms
-`define input_freq 'd31_250 //kHz
+`define tPPmax 'd5 // ms
+`define tBEmax 'd250_000 // ms
+`define tSEmax 'd3_000 // ms
+`define input_freq 'd31_250 // kHz

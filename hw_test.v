@@ -2,29 +2,30 @@
 
 `include "defs.vh"
 
-// - in a simulation, RESET comes from a testbench and CLK_TO_MEM_OUT has to be connected to the mem model via the testbench
-// - in hardware, when FPGA boot memory is used, memory clock has to be connected via STARTUPE2
-//   and EOS - end of startup signal - can be used as RESET
+// In a simulation reset comes from the testbench and clk_to_mem_out has to be connected
+//  to the SPI memory model in the testbench.
+// In hardware, if the FPGA SPI boot memory is used, the memory clock has to be connected
+//  via STARTUPE2 and end_of_startup can be used as a reset.
 
-module hw_test(
-        input CLK_100M,
-        output [1:0] LED,
+module hw_test (
+    input CLK_100M,
+    output [1:0] LED,
 
 `ifndef  __SYNTHESIS__
-        output CLK_TO_MEM_OUT,
-        input RESET,
+    output clk_to_mem_out,
+    input rst,
 `endif
-        inout [3:0] DQio,
-        output S
+    inout [3:0] DQio,
+    output S
     );
    
     wire clk_to_mem, clk;
-    wire EOS;
+    wire end_of_startup;
 
 `ifndef  __SYNTHESIS__
-    assign CLK_TO_MEM_OUT = clk_to_mem;
+    assign clk_to_mem_out = clk_to_mem;
 `else 
-    wire RESET = ~EOS;
+    wire rst = ~end_of_startup;
 `endif
 
     wire [7:0] readout;
@@ -36,43 +37,39 @@ module hw_test(
     reg [(3+256)*8-1:0] data_send;
     reg [4:0] state;
     reg [1:0] LEDr;
-    reg blink;
+
+    assign LED[0] = LEDr[0]; // indicates end of sequence
+    assign LED[1] = LEDr[1]; // indicates success
     
-    assign LED[0] = blink & LEDr[0];  // indicates end of sequence
-    assign LED[1] = ~blink & LEDr[1]; // indicates success
- 
- 
-    clk_for_spi clk_spi_inst
-      (
+    clk_for_spi clk_spi_inst (
        .clk_in1(CLK_100M),      // input clk_in1, 100 MHz
        .clk_out1(clk),          // output clk_out1, 40 MHz, 0 deg
        .clk_out2(clk_to_mem),   // output clk_out2, 40 MHz, 180 deg
-       .reset(RESET)
+       .reset(rst)
     );      
 
     STARTUPE2 #(
-       .PROG_USR("FALSE"),  // Activate program event security feature. Requires encrypted bitstreams.
-       .SIM_CCLK_FREQ(10.0)  // Set the Configuration Clock Frequency(ns) for simulation.
-    )
-    STARTUPE2_inst (
-        .CFGCLK(),              // 1-bit output: Configuration main clock output
-        .CFGMCLK(),             // 1-bit output: Configuration internal oscillator clock output
-        .EOS(EOS),              // 1-bit output: Active high output signal indicating the End Of Startup.
-        .PREQ(),                // 1-bit output: PROGRAM request to fabric output
-        .CLK(1'b0),             // 1-bit input: User start-up clock input
-        .GSR(1'b0),             // 1-bit input: Global Set/Reset input (GSR cannot be used for the port name)
-        .GTS(1'b0),             // 1-bit input: Global 3-state input (GTS cannot be used for the port name)
-        .KEYCLEARB(1'b0),       // 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
-        .PACK(1'b0),             // 1-bit input: PROGRAM acknowledge input
-        .USRCCLKO(clk_to_mem),   // 1-bit input: User CCLK input
-        .USRCCLKTS(1'b0), // 1-bit input: User CCLK 3-state enable input
-        .USRDONEO(1'b1),   // 1-bit input: User DONE pin output control
-        .USRDONETS(1'b1)  // 1-bit input: User DONE 3-state enable output
+       .PROG_USR("FALSE"),
+       .SIM_CCLK_FREQ(10.0)
+    ) STARTUPE2_inst (
+        .CFGCLK(),
+        .CFGMCLK(),
+        .EOS(end_of_startup),
+        .PREQ(),
+        .CLK(1'b0),
+        .GSR(1'b0),
+        .GTS(1'b0),
+        .KEYCLEARB(1'b0),
+        .PACK(1'b0),
+        .USRCCLKO(clk_to_mem),
+        .USRCCLKTS(1'b0),
+        .USRDONEO(1'b1),
+        .USRDONETS(1'b1)
     );
  
-        qspi_mem_controller mc(
+    qspi_mem_controller mc(
         .clk(clk), 
-        .reset(RESET),
+        .reset(rst),
         .S(S), 
         .DQio(DQio),
         .trigger(trigger),
@@ -81,27 +78,23 @@ module hw_test(
         .data_send(data_send),
         .readout(readout),
         .busy(busy),
-        .error(error));
-
-
+        .error(error)
+    );
 
     always @(posedge clk) begin
-        if(RESET) begin
+        if (rst) begin
             trigger <= 0;
             state <= 0;
             LEDr <= 0;
-            blink <= 0;
             quad <= 0;
         end else begin
-            blink <= ~blink;
-        
             case(state)
                 0: begin
                     if(!busy)
                         state <= state+1;
                 end
                 
-                1: begin    // read memory ID to check communication
+                1: begin    // read memory ID to test the communication
                     cmd <= `CMD_RDID;
                     trigger <= 1;   
                     state <= state+1;                    
@@ -111,6 +104,7 @@ module hw_test(
                     if (trigger)
                         trigger <= 0;
                     else if(!busy) begin
+                        $display("mem id: %d", readout);
                         if (readout == `JEDEC_ID) begin // verify the memory ID read
                             LEDr[1] <= 1;
                             // enable quad IO
@@ -118,8 +112,9 @@ module hw_test(
                             data_send[7:0] <= 8'b010_01_111;  // quad protocol, hold/accelerator disabled, default drive strength
                             trigger <= 1;   
                             state <= state+1;    
-                        end else
+                        end else begin
                             LEDr[0] <= 1; // memory ID is wrong, error, finish
+                        end
                     end
                 end
                 
@@ -159,7 +154,5 @@ module hw_test(
             endcase
         end
     end
-
-
 
 endmodule

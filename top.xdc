@@ -18,9 +18,7 @@ set_property PACKAGE_PIN R22 [get_ports {DQio[1]}]
 set_property PACKAGE_PIN P21 [get_ports {DQio[2]}]
 set_property PACKAGE_PIN R21 [get_ports {DQio[3]}]
 
-
 set_property PACKAGE_PIN H4 [get_ports CLK_100M]
-create_clock -name clk_100m -period 10 [get_ports CLK_100M]
 
 set_property PACKAGE_PIN B1 [get_ports {LED[1]}]
 set_property PACKAGE_PIN D1 [get_ports {LED[0]}]
@@ -36,4 +34,4 @@ set_output_delay -clock [get_clocks cclk] -max -add_delay 4.000 [get_ports S]
 
 
 set_false_path -to [get_ports {LED[*]}]
-set_false_path -from [get_ports RESET]
+set_false_path -from [get_ports rst]

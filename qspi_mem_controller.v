@@ -22,7 +22,7 @@ module qspi_mem_controller(
         input trigger,
         input quad,
         input [7:0] cmd,
-        input [(3+256)*8-1:0] data_send, //max: 256B page data + 3B address
+        input [(3+256)*8-1:0] data_send, // max: 256B page data + 3B address
         output reg [7:0] readout,
         output reg busy,
         output reg error,
@@ -33,25 +33,30 @@ module qspi_mem_controller(
     
     reg spi_trigger;
     wire spi_busy;
-    
     reg [260*8-1:0] data_in;
     reg [8:0] data_in_count;
     wire [7:0] data_out;
     reg data_out_count;
-    
     reg [35:0] delay_counter;
-    
-    spi_cmd sc(.clk(clk), .reset(reset), .trigger(spi_trigger), .busy(spi_busy), .quad(quad),
-        .data_in_count(data_in_count), .data_out_count(data_out_count), .data_in(data_in), .data_out(data_out),
-        .DQio(DQio[3:0]), .S(S));
-    
-    
     reg [5:0] state;
     reg [5:0] nextstate;
-    
-    
+
+    spi_cmd sc (
+        .clk(clk),
+        .reset(reset),
+        .trigger(spi_trigger),
+        .busy(spi_busy),
+        .quad(quad),
+        .data_in_count(data_in_count),
+        .data_out_count(data_out_count),
+        .data_in(data_in),
+        .data_out(data_out),
+        .DQio(DQio[3:0]),
+        .S(S)
+    );
+
     always @(posedge clk) begin
-        if(reset) begin
+        if (reset) begin
             state <= `STATE_WAIT;
             nextstate <= `STATE_IDLE;
             spi_trigger <= 0;
@@ -61,12 +66,12 @@ module qspi_mem_controller(
         end
         
         else
-            case(state)
+            case (state)
                 `STATE_IDLE: begin
-                    if(trigger) begin
+                    if (trigger) begin
                         busy <= 1;
                         error <= 0;
-                        case(cmd)
+                        case (cmd)
                             `CMD_RDID:
                                 state <= `STATE_RDID;
                             `CMD_MIORDID:
@@ -87,7 +92,6 @@ module qspi_mem_controller(
                                 state <= `STATE_RDSR;
                             default: begin
                                 $display("ERROR: unknown command!");
-                                $display(cmd);
                                 $stop;
                             end
                         endcase
@@ -201,7 +205,7 @@ module qspi_mem_controller(
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
                     nextstate <= `STATE_POLL_RFSR;               
-                    delay_counter <= `tPPmax*`input_freq;
+                    delay_counter <= `tPPmax * `input_freq;
                end
 
                 `STATE_SE: begin
@@ -211,11 +215,9 @@ module qspi_mem_controller(
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
                     nextstate <= `STATE_POLL_RFSR;               
-                    delay_counter <= `tSEmax*`input_freq;
+                    delay_counter <= `tSEmax * `input_freq;
                end
-                
             endcase
     end
-    
     
 endmodule

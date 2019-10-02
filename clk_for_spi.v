@@ -1,34 +1,37 @@
 `timescale 1ns / 1ps
 
-
-module clk_for_spi(
+module clk_for_spi (
     input clk_in1,
     output clk_out1,
     output clk_out2,
     input reset
     );
     
-   wire       clk_in1_mmcm,  clkfbout_mmcm, clkfbout_buf_mmcm, clk_out1_mmcm, clk_out2_mmcm;
+   wire clk_in1_mmcm, clkfbout_mmcm, clkfbout_buf_mmcm, clk_out1_mmcm, clk_out2_mmcm;
 
-  IBUF clkin1_ibufg
-      (.O (clk_in1_mmcm),
-      .I (clk_in1));
+    IBUF clkin1_ibufg (
+        .O(clk_in1_mmcm),
+        .I(clk_in1)
+    );
   
-       BUFG clkf_buf
-       (.O (clkfbout_buf_mmcm),
-        .I (clkfbout_mmcm));
+    BUFG clkf_buf (
+        .O(clkfbout_buf_mmcm),
+        .I(clkfbout_mmcm)
+    );
     
-      BUFG clkout1_buf
-       (.O   (clk_out1),
-        .I   (clk_out1_mmcm));
+    BUFG clkout1_buf (
+        .O(clk_out1),
+        .I(clk_out1_mmcm)
+    );
     
-      BUFG clkout2_buf
-       (.O   (clk_out2),
-        .I   (clk_out2_mmcm));
+    BUFG clkout2_buf (
+        .O(clk_out2),
+        .I(clk_out2_mmcm)
+    );
   
    
-     MMCME2_ADV
-      #(.BANDWIDTH            ("OPTIMIZED"),
+     MMCME2_ADV #(
+        .BANDWIDTH            ("OPTIMIZED"),
         .CLKOUT4_CASCADE      ("FALSE"),
         .COMPENSATION         ("ZHOLD"),
         .STARTUP_WAIT         ("FALSE"),
@@ -75,7 +78,7 @@ module clk_for_spi(
         .CLKINSTOPPED        (),
         .CLKFBSTOPPED        (),
         .PWRDWN              (1'b0),
-        .RST                 (reset));
-    
-    
+        .RST                 (reset)
+       );
+
 endmodule

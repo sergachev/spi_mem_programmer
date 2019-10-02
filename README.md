@@ -1,4 +1,4 @@
-####Small (Q)SPI flash memory programmer in Verilog.
+#### Small (Q)SPI flash memory programmer in Verilog.
 
 Can read memory chip IDs, enable quad SPI mode, disable write protection, erase sectors, do bulk erase, program pages and poll the status register.
 

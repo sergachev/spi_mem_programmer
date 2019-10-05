@@ -2,7 +2,7 @@
 
 module testbench();
     reg clk = 0, rst = 1;
-    wire [1:0] LED;
+    wire [1:0] status_led;
     
     always begin
         clk = 1; #5;
@@ -10,19 +10,22 @@ module testbench();
     end
 
     initial begin
-        $display("SIM START");
-        #605e3; // wait for the memory to initialize
+        // Wait for the memory to become fully accessible.
+        // According to the N25Q datasheet the interval should be >= 600 us.
+        // In the verilog model of N25Q this delay is shorter by default
+        // (full_access_power_up_delay in TimingData.h)
+        #150;
         rst = 0;
         #10;
-        while(!LED[0]) #10;
-        $display("SIM END: %d", LED[1]);
-        $stop;
+        while (!status_led[0]) #10;
+        $display("testbench process finished: %s", status_led[1] ? "success" : "failed");
+        $finish;
     end
 
     wire clk_to_mem, S, HOLD_DQ3, Vpp_W_DQ2, DQ1, DQ0;
 
-    hw_test ht (
-        .LED(LED),
+    top top_inst (
+        .status_led(status_led),
         .rst(rst),
         .CLK_100M(clk),
         .clk_to_mem_out(clk_to_mem),
@@ -30,32 +33,14 @@ module testbench();
         .DQio({HOLD_DQ3, Vpp_W_DQ2, DQ1, DQ0})
     );
     
-    N25Qxxx m1 (
+    N25Qxxx mem_inst (
         .S(S),
         .C_(clk_to_mem),
         .HOLD_DQ3(HOLD_DQ3),
         .DQ0(DQ0),
         .DQ1(DQ1),
-        .Vcc('d3000),
+        .Vcc('d3300),
         .Vpp_W_DQ2(Vpp_W_DQ2)
     );
-
-//    s25fl128l m1 (
-//        .SI(DQ0),
-//        .SO(DQ1),
-//        .SCK(clk_to_mem),
-//        .CSNeg(S),
-//        .WPNeg(Vpp_W_DQ2),
-//        .IO3_RESETNeg(HOLD_DQ3)
-//    );
-
-//    GD25Q16B m1 (
-//        .sclk(clk_to_mem),
-//        .si(DQ0),
-//        .cs(S),
-//        .wp(Vpp_W_DQ2),
-//        .hold(HOLD_DQ3),
-//        .so(DQ1)
-//    );
 
 endmodule

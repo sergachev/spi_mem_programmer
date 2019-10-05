@@ -10,7 +10,12 @@
 `define CMD_PP 8'h02
 `define CMD_QCFR 8'h0B
 
+// n25q
 `define JEDEC_ID 8'h20
+// gd25q
+//`define JEDEC_ID 8'hC8
+// s25fl
+//`define JEDEC_ID 8'h01
 
 `define tPPmax 'd5 // ms
 `define tBEmax 'd250_000 // ms

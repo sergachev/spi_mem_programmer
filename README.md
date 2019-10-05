@@ -1,23 +1,19 @@
-#### Small (Q)SPI flash memory programmer in Verilog.
+## Small (Q)SPI flash memory programmer in Verilog
 
-Can read memory chip IDs, enable quad SPI mode, disable write protection, erase sectors, do bulk erase, program pages and poll the status register.
-
-Tested in simulation with several Verilog SPI memory models listed below and in hardware - in-system reprogramming the N25Q128 boot memory of Artix 7 at 40 MHz.
-
-Tested memory models:
-- N25Q128: https://www.micron.com/~/media/documents/products/sim-model/nor-flash/serial/bfm/n25q/n25q128a13e_3v_micronxip_vg12,-d-,tar.gz
-
-- GD25Q16B: https://transfer.sh/l7kcx/GD25Q16B_verilog.rar (no longer available on the manufacturer's website)
-
-- S25FL128L: https://www.cypress.com/file/260091/download
+Targets N25Q128 memory, adaptable to other ones.
+Can read memory chip ID, enable quad SPI mode, disable write protection, erase sectors, do bulk erase, program pages and poll the status register.
 
 
-Code structure:
+#### Implementation
+`top.v` can be used to implement a minimal test design for a Xilinx FPGA (tested on Artix); STARTUPE2 primitive is used to talk to the boot memory of the FPGA. `top.xdc` are the constraints to use together. Configured to run from 100 MHz external clock converting it to 40 MHz for SPI; indicates the test progress using 2 LEDs.
 
-1: spi_cmd.v: low-level SPI write-read sequence using 4x i/o and chip select
 
-2: qspi_mem_controller.v: memory-specific commands (erase, write page etc) and simple sequences like "start a write then poll status register until it's finished"
+#### Simulation
+`testbench.v` wraps `top.v` for a simulation with a Verilog model of the memory. `sim.sh` runs the simulation with Icarus Verilog (https://github.com/steveicarus/iverilog); Xilinx Vivado simulator can be used as well. 
+###### Requirements:
+- Memory model files (`N25Qxxx.v`, `*.vmf`, `include/*`) from https://www.micron.com/~/media/documents/products/sim-model/nor-flash/serial/bfm/n25q/n25q128a13e_3v_micronxip_vg12,-d-,tar.gz
+- line 2024 in `N25Qxxx.v` has to be patched at least for Icarus Verilog (see https://github.com/steveicarus/iverilog/issues/131)
+- Xilinx primitives Verilog models from Vivado (see `sim.sh`)
 
-3: hw_test.v: minimal complete example which can be used as a top module for implementation. Uses STARTUPE2 primitive to connect to the boot memory on Xilinx FPGAs.
-
-4: testbench.v: simulation testbench for hw_test.v  
+#### Notes
+The 256-byte wide data interface is definitely inoptimal for implementation (though it works) and should be replaced with something more reasonable.

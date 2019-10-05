@@ -96,15 +96,16 @@ module spi_cmd(
     end 
    
     always @(negedge clk) begin
-        if (reset)
+        if (reset) begin
             data_out <= 0;
-        else
+        end else begin
             if (state == `STATE_READ) begin
                 if (quad)
                     data_out <= {data_out[3:0], DQio[3], DQio[2], DQio[1], DQio[0]};
                 else
                     data_out <= {data_out[6:0], DQio[1]};
             end
+        end
     end
 
 endmodule

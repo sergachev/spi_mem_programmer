@@ -9,11 +9,11 @@ Can read memory chip ID, enable quad SPI mode, disable write protection, erase s
 
 
 #### Simulation
-`testbench.v` wraps `top.v` for a simulation with a Verilog model of the memory. `sim.sh` runs the simulation with Icarus Verilog (https://github.com/steveicarus/iverilog); Xilinx Vivado simulator can be used as well. 
+`testbench.v` wraps `top.v` for a simulation with the Verilog model of the memory. `sim_iverilog.sh` runs the simulation with Icarus Verilog (https://github.com/steveicarus/iverilog); `sim_vivado.sh` runs the Xilinx Vivado simulator. 
 ###### Requirements:
 - Memory model files (`N25Qxxx.v`, `*.vmf`, `include/*`) from https://www.micron.com/~/media/documents/products/sim-model/nor-flash/serial/bfm/n25q/n25q128a13e_3v_micronxip_vg12,-d-,tar.gz
 - line 2024 in `N25Qxxx.v` has to be patched at least for Icarus Verilog (see https://github.com/steveicarus/iverilog/issues/131)
-- Xilinx primitives Verilog models from Vivado (see `sim.sh`)
+- Xilinx primitives Verilog model files from Vivado (see `sim_iverilog.sh`)
 
 #### Notes
 The 256-byte wide data interface is definitely inoptimal for implementation (though it works) and should be replaced with something more reasonable.

@@ -1,0 +1,12 @@
+verilog xil_defaultlib \
+  clk_for_spi.v \
+  spi_cmd.v \
+  qspi_mem_controller.v \
+  top.v \
+  N25Qxxx.v \
+  testbench.v \
+  /opt/Xilinx/Vivado/2019.1/data/verilog/src/glbl.v \
+  /opt/Xilinx/Vivado/2019.1/data/verilog/src/unisims/IBUF.v \
+  /opt/Xilinx/Vivado/2019.1/data/verilog/src/unisims/BUFG.v \
+  /opt/Xilinx/Vivado/2019.1/data/verilog/src/unisims/MMCME2_ADV.v \
+  /opt/Xilinx/Vivado/2019.1/data/verilog/src/unisims/STARTUPE2.v

@@ -3,7 +3,7 @@ verilog xil_defaultlib \
   spi_cmd.v \
   qspi_mem_controller.v \
   top.v \
-  N25Qxxx.v \
+  N25Q128A13E_VG12/code/N25Qxxx.v \
   testbench.v \
   /opt/Xilinx/Vivado/2019.1/data/verilog/src/glbl.v \
   /opt/Xilinx/Vivado/2019.1/data/verilog/src/unisims/IBUF.v \

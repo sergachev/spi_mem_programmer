@@ -1,0 +1,19 @@
+*** N25Q128A13E_VG12/code/N25Qxxx.v.orig	2019-10-06 10:05:21.607227545 +0200
+--- N25Q128A13E_VG12/code/N25Qxxx.v	2019-10-06 10:06:00.967314073 +0200
+***************
+*** 2021,2027 ****
+  
+  
+        dtr_dout_started = 1'b1;
+!       force DQ1 = 1'bX;
+        if(N25Qxxx.DoubleTransferRate == 1) force DQ0 = 1'bX;
+        if((cmdRecName == "Read Fast") || 
+          (cmdRecName == "Dual Command Fast Read") || 
+--- 2021,2027 ----
+  
+  
+        dtr_dout_started = 1'b1;
+! //      force DQ1 = 1'bX;
+        if(N25Qxxx.DoubleTransferRate == 1) force DQ0 = 1'bX;
+        if((cmdRecName == "Read Fast") || 
+          (cmdRecName == "Dual Command Fast Read") || 

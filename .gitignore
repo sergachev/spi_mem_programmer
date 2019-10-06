@@ -2,3 +2,5 @@
 *.log
 *.pb
 xsim.dir/
+sim.vvp
+n25q128a13e_3v_micronxip_vg12,-d-,tar.gz

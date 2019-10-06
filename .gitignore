@@ -1,6 +1,15 @@
 *.jou
 *.log
 *.pb
+*.xpr
+*.prm
+*.mcs
+*.bit
+*.lpr
+*.dcp
+*webtalk*
+*.cache/
+.Xil/
 xsim.dir/
 sim.vvp
 n25q128a13e_3v_micronxip_vg12,-d-,tar.gz

@@ -2,7 +2,8 @@
 
 BIN=sim.vvp
 VV=/opt/Xilinx/Vivado/2019.1/data/verilog/src
-rm $BIN
+set -e
+rm -f $BIN
 iverilog -Wall \
   -o $BIN \
   -I N25Q128A13E_VG12 \

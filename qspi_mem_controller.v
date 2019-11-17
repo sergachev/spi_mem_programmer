@@ -20,7 +20,7 @@ module qspi_mem_controller(
         input clk,
         input reset,
         input trigger,
-        input quad,
+        input quad_mode,
         input [7:0] cmd,
         input [(3+256)*8-1:0] data_send, // max: 256B page data + 3B address
         output reg [7:0] readout,
@@ -46,7 +46,7 @@ module qspi_mem_controller(
         .reset(reset),
         .trigger(spi_trigger),
         .busy(spi_busy),
-        .quad(quad),
+        .quad_mode(quad_mode),
         .data_in_count(data_in_count),
         .data_out_count(data_out_count),
         .data_in(data_in),
@@ -106,7 +106,7 @@ module qspi_mem_controller(
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
                     nextstate <= `STATE_IDLE;
-                    if (quad == 1) begin
+                    if (quad_mode == 1) begin
                         $display("ERROR: RDID is not available in quad mode!");
                         $stop;
                     end
@@ -119,7 +119,7 @@ module qspi_mem_controller(
                     spi_trigger <= 1;
                     state <= `STATE_WAIT;
                     nextstate <= `STATE_IDLE;
-                    if (quad == 0) begin
+                    if (quad_mode == 0) begin
                         $display("ERROR: MIORDID is only available in quad mode!");
                         $stop;
                     end

@@ -32,7 +32,7 @@ module top (
     wire busy;
     wire error;
     reg trigger;
-    reg quad;
+    reg quad_mode;
     reg [7:0] cmd;
     reg [(3+256)*8-1:0] data_send;
     reg [4:0] state;
@@ -69,7 +69,7 @@ module top (
         .S(S), 
         .DQio(DQio),
         .trigger(trigger),
-        .quad(quad),
+        .quad_mode(quad_mode),
         .cmd(cmd),
         .data_send(data_send),
         .readout(readout),
@@ -82,7 +82,7 @@ module top (
             trigger <= 0;
             state <= 0;
             status_led <= 0;
-            quad <= 0;
+            quad_mode <= 0;
         end else begin
             case(state)
                 0: begin
@@ -118,7 +118,7 @@ module top (
                     if (trigger) begin
                         trigger <= 0;
                     end else if (!busy) begin
-                        quad <= 1;
+                        quad_mode <= 1;
                         cmd <= `CMD_WREN;
                         trigger <= 1;
                         state <= state+1;
